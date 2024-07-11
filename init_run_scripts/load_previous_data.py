@@ -5,6 +5,7 @@ import json
 from decimal import Decimal
 import pandas as pd
 import numpy as np
+import subprocess
 
 
 #this script loads previous data
@@ -20,3 +21,83 @@ potential_function_name=jsonDataFromConf["potential_function_name"]
 U_dist_dataDir=jsonFromSummary["U_dist_dataDir"]
 startingFileInd=jsonFromSummary["startingFileInd"]
 startingVecPosition=jsonFromSummary["startingVecPosition"]
+U_dist_dataDir=jsonFromSummary["U_dist_dataDir"]
+#search and read U_dist files
+#give arbitrary values to L, y0, z0, y1 without reading data
+UInit=6
+LInit=1
+y0Init=2
+z0Init=3
+y1Init=4
+loopLastFile=-1
+
+
+#search csv files
+csvFileList=[]
+loopEndAll=[]
+for file in glob.glob(U_dist_dataDir+"/*.csv"):
+    csvFileList.append(file)
+    matchEnd=re.search(r"loopEnd(\d+)",file)
+    if matchEnd:
+        loopEndAll.append(int(matchEnd.group(1)))
+
+def create_loadedJsonData(UVal,LVal,y0Val,z0Val,y1Val,loopLastFileVal):
+    """
+
+    :param UVal:
+    :param LVal:
+    :param y0Val:
+    :param z0Val:
+    :param y1Val:
+    :param loopLastFileVal:
+    :return: loadedJsonData as string
+    """
+    initDataDict={
+        "U":str(UVal),
+        "L":str(LVal),
+        "y0":str(y0Val),
+        "z0":str(z0Val),
+        "y1":str(y1Val),
+        "loopLastFile":str(loopLastFileVal)
+    }
+    return json.dumps(initDataDict)
+
+
+#if no data found, return the arbitrary values
+if len(csvFileList)==0:
+    loadedJsonDataStr=create_loadedJsonData(UInit,LInit,y0Init,z0Init,y1Init,loopLastFile)
+    loadedJsonData_stdout="loadedJsonData="+loadedJsonDataStr
+    print(loadedJsonData_stdout)
+    exit(0)
+
+
+#if found csv data
+sortedEndInds=np.argsort(loopEndAll)
+sortedLoopEnd=[loopEndAll[ind] for ind in sortedEndInds]
+sortedCsvFileNames=[csvFileList[ind] for ind in sortedEndInds]
+loopLastFile=sortedLoopEnd[-1]
+
+lastFileName=sortedCsvFileNames[-1]
+
+def get_last_row(csv_file):
+    result = subprocess.run(['tail', '-n', '1', csv_file], stdout=subprocess.PIPE)
+    last_row = result.stdout.decode('utf-8').strip()
+    return last_row
+
+csvLastRowStr=get_last_row(lastFileName)
+# print(csvLastRowStr)
+
+
+valsInLastRow = [float(value) for value in csvLastRowStr.split(',')]
+
+UInit=valsInLastRow[0]
+LInit=valsInLastRow[1]
+y0Init=valsInLastRow[2]
+z0Init=valsInLastRow[3]
+y1Init=valsInLastRow[4]
+
+loadedJsonDataStr=create_loadedJsonData(UInit,LInit,y0Init,z0Init,y1Init,loopLastFile)
+loadedJsonData_stdout="loadedJsonData="+loadedJsonDataStr
+print(loadedJsonData_stdout)
+exit(0)
+

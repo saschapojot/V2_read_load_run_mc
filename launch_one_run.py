@@ -23,7 +23,7 @@ confJsonStr2stdout=confResult.stdout
 # print(confJsonStr2stdout)
 if confResult.returncode !=0:
     print("Error running parseConf.py with code "+str(confResult.returncode))
-    print(confResult.stderr)
+    # print(confResult.stderr)
     exit(confErrCode)
 
 
@@ -43,8 +43,8 @@ parseSummaryResult=subprocess.run(["python3","./init_run_scripts/search_and_read
 # print(parseSummaryResult.stdout)
 if parseSummaryResult.returncode!=0:
     print("Error in parsing summary with code "+str(parseSummaryResult.returncode))
-    print(parseSummaryResult.stdout)
-    print(parseSummaryResult.stderr)
+    # print(parseSummaryResult.stdout)
+    # print(parseSummaryResult.stderr)
     exit(summaryErrCode)
 
 match_summaryJson=re.match(r"jsonFromSummary=(.+)$",parseSummaryResult.stdout)
@@ -57,7 +57,47 @@ if match_summaryJson:
 #load previous data, to get L, y0,z0,y1,
 #get loadedJsonData
 loadResult=subprocess.run(["python3","./init_run_scripts/load_previous_data.py", json.dumps(jsonDataFromConf), json.dumps(jsonFromSummary)],capture_output=True, text=True)
-print(loadResult.stdout)
+# print(loadResult.stdout)
 if loadResult.returncode!=0:
     print("Error in loading with code "+str(loadResult.returncode))
     exit(loadErrCode)
+
+match_loadJson=re.match(r"loadedJsonData=(.+)$",loadResult.stdout)
+if match_loadJson:
+    loadedJsonData=json.loads(match_loadJson.group(1))
+else:
+    print("loadedJsonData missing.")
+    exit(loadErrCode)
+###############################################
+
+###############################################
+#construct parameters that are passed to mc
+TStr=jsonDataFromConf["T"]
+funcName=jsonDataFromConf["potential_function_name"]
+loopToWrite=jsonDataFromConf["loop_to_write"]
+UStr=loadedJsonData["U"]
+LStr=loadedJsonData["L"]
+y0Str=loadedJsonData["y0"]
+z0Str=loadedJsonData["z0"]
+y1Str=loadedJsonData["y1"]
+loopLastFile=loadedJsonData["loopLastFile"]
+
+jsonToCpp={
+    "L":LStr,
+    "y0":y0Str,
+    "z0":z0Str,
+    "y1":y1Str
+}
+
+newFlushNum=jsonFromSummary["newFlushNum"]
+TDirRoot=jsonFromSummary["TDirRoot"]
+U_dist_dataDir=jsonFromSummary["U_dist_dataDir"]
+coefsJson=jsonDataFromConf["coefsJson"]
+
+parametersToCpp=[TStr,json.dumps(coefsJson),funcName, json.dumps(jsonToCpp),
+                 loopToWrite,newFlushNum,loopLastFile,
+                 TDirRoot,U_dist_dataDir]
+parametersToCppStr=[str(elem) for elem in parametersToCpp]
+# print(parametersToCppStr)
+# print("num of parameters to c++="+str(len(parametersToCpp)))
+###############################################
