@@ -49,6 +49,8 @@ def contents_to_conf(k):
     contents=[
         "#This is the configuration file for mc computations\n",
         "\n"
+        "potential_function_name=V2\n",
+        "\n" ,
         "#parameters of coefficients\n",
         "#parameter_row=row0\n",
         "a1="+format_using_decimal(a1)+"\n",
@@ -63,9 +65,9 @@ def contents_to_conf(k):
         "\n",
         "search_and_read_summary_file=True\n"
         "\n",
-        "#For the observable name, only digits, letters a-zA-Z, underscore _ are allowed\n",
+        "#For the observable name, only digits 0-9, letters a-zA-Z, underscore _ are allowed\n",
         "\n",
-        "observable_name=dist\n",
+        "observable_name=U_dist\n",
         "\n",
         "effective_data_num_required=2000\n",
         "\n",
