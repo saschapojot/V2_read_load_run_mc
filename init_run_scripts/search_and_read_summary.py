@@ -9,7 +9,7 @@ from distutils.util import strtobool
 
 import numpy as np
 #this script initializes the parameters for mc computation by reading summary file
-#and also creates necessary folders
+#and also creates/erases necessary folders
 
 invalidValueErrCode=1
 mcErrCode=2

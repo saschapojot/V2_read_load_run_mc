@@ -6,18 +6,18 @@
 #define V2_READ_LOAD_RUN_MC_POTENTIALFUNCTIONPROTOTYPE_HPP
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <cmath>
 #include <fstream>
 #include <iostream>
-#include <math.h>
 #include <memory>
 #include <string>
-
+#include <sstream>
 class potentialFunction {
 //base class for potential function
 public:
     virtual double operator()(const double&L,const double &y0, const double &z0, const double& y1) const = 0;
-    virtual std::string getParamStr() const = 0;
     virtual void json2Coefs(const std::string &coefsJson)=0;
+    virtual  void init()=0;
     virtual ~ potentialFunction() {};
 
 };
