@@ -61,7 +61,7 @@ public:
         //parse json to get initial value
         this->parseJsonData(jsonToCppInitValsStr, this->LInit, this->y0Init, this->z0Init, this->y1Init);
         this->varNum = 5;
-
+//
 //        std::cout<<"LInit="<<LInit<<", y0Init="<<y0Init
 //        <<", z0Init="<<z0Init<<", y1Init="<<y1Init<<std::endl;
 

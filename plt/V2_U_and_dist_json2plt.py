@@ -73,6 +73,7 @@ def pltU_dist(oneTFile):
 
     varU=np.var(UVec,ddof=1)
     sigmaU=np.sqrt(varU)
+    UConfHalfLength=np.sqrt(varU/len(UVec))
     nbins=500
     fig=plt.figure()
     axU=fig.add_subplot()
@@ -132,6 +133,7 @@ def pltU_dist(oneTFile):
     #dist part
     LMean=np.mean(LVec)
     LVar=np.var(LVec,ddof=1)
+    LConfHalfLength=np.sqrt(LVar/len(LVec))
 
     d0A0BVec=[]#y0
     d0B1AVec=[]#z0
@@ -167,6 +169,8 @@ def pltU_dist(oneTFile):
     y1Mean=np.mean(y1Vec)
     y1Var=np.var(y1Vec,ddof=1)
 
+    y1ConfHalfLength=np.sqrt(y1Var/len(y1Vec))
+
     smrDistFileName=oneTFile+"/distSummary.txt"
     dist=[d0A0BMean,d0B1AMean,d1A1BMean,d1B0AMean]
     varsAll=[d0A0BVar,d0B1AVar,d1A1BVar,d1B0AVar]
@@ -197,11 +201,12 @@ def pltU_dist(oneTFile):
     with open(prodFile, 'w') as json_file:
         json.dump(prodData, json_file, indent=4)
 
-    return [meanU,varU,y1Mean,y1Var,LMean,LVar,d0A0BMean,d0B1AMean,d1A1BMean,d1B0AMean,d0A0BVar,d0B1AVar,d1A1BVar,d1B0AVar]
+    return [meanU,varU,UConfHalfLength,y1Mean,y1Var,LMean,LVar,d0A0BMean,d0B1AMean,d1A1BMean,d1B0AMean,d0A0BVar,d0B1AVar,d1A1BVar,d1B0AVar,LConfHalfLength,y1ConfHalfLength]
 
 
 UMeanValsAll=[]
 UVarValsAll=[]
+UConfHalfLengthAll=[]
 y1MeanValsAll=[]
 y1VarValsAll=[]
 LMeanValsAll=[]
@@ -215,15 +220,17 @@ d0A0BVarValsAll=[]
 d0B1AVarValsAll=[]
 d1A1BVarValsAll=[]
 d1B0AVarValsAll=[]
-
+LConfHalfLengthAll=[]
+y1ConfHalfLengthAll=[]
 tStatsStart=datetime.now()
 # TToPlt=[]
 # print(sortedTFiles)
 for k in range(0,len(sortedTFiles)):
     oneTFile=sortedTFiles[k]
-    UMeanTmp,UVarTmp,y1Mean,y1Var,LMean,LVar,d0A0BMean,d0B1AMean,d1A1BMean,d1B0AMean,d0A0BVar,d0B1AVar,d1A1BVar,d1B0AVar=pltU_dist(oneTFile)
+    UMeanTmp,UVarTmp,UConfHalfLength,y1Mean,y1Var,LMean,LVar,d0A0BMean,d0B1AMean,d1A1BMean,d1B0AMean,d0A0BVar,d0B1AVar,d1A1BVar,d1B0AVar,LConfHalfLength,y1ConfHalfLength=pltU_dist(oneTFile)
     UMeanValsAll.append(UMeanTmp)
     UVarValsAll.append(UVarTmp)
+    UConfHalfLengthAll.append(UConfHalfLength)
 
     y1MeanValsAll.append(y1Mean)
     y1VarValsAll.append(y1Var)
@@ -239,11 +246,15 @@ for k in range(0,len(sortedTFiles)):
     d1A1BVarValsAll.append(d1A1BVar)
     d1B0AVarValsAll.append(d1B0AVar)
 
+    LConfHalfLengthAll.append(LConfHalfLength)
+    y1ConfHalfLengthAll.append(y1ConfHalfLength)
+
 tStatsEnd=datetime.now()
 print("stats total time: ",tStatsEnd-tStatsStart)
 
 UMeanValsAll=np.array(UMeanValsAll)
 UVarValsAll=np.array(UVarValsAll)
+UConfHalfLengthAll=np.array(UConfHalfLengthAll)
 y1MeanValsAll=np.array(y1MeanValsAll)
 y1VarValsAll=np.array(y1VarValsAll)
 LMeanValsAll=np.array(LMeanValsAll)
@@ -253,8 +264,8 @@ d0B1AMeanValsAll=np.array(d0B1AMeanValsAll)
 d1A1BMeanValsAll=np.array(d1A1BMeanValsAll)
 d1B0AMeanValsAll=np.array(d1B0AMeanValsAll)
 
-
-
+LConfHalfLengthAll=np.array(LConfHalfLengthAll)
+y1ConfHalfLengthAll=np.array(y1ConfHalfLengthAll)
 
 sortedTVals=np.array(sortedTVals)
 # print(sortedTVals)
@@ -262,7 +273,8 @@ TInds=np.where(sortedTVals<100)
 TToPlt=sortedTVals[TInds]
 interpolatedTVals=np.linspace(np.min(TToPlt)*0.9,np.max(TToPlt)*1.1,30)
 
-
+######################################################
+#plt U
 def EV(T):
     '''
 
@@ -270,17 +282,26 @@ def EV(T):
     :return: asymptotic value of E(V)
     '''
     return 2*T
-plt.figure()
+# plt.figure()
+# EVVals=[EV(T) for T in interpolatedTVals]
+# plt.plot(interpolatedTVals,EVVals,color="green",label="theory")
+# plt.scatter(TToPlt,UMeanValsAll[TInds],color="darkred",label="mc")
+# plt.title("E(V)")
+# plt.xlabel("$T$")
+# plt.legend(loc="best")
+# plt.savefig(jsonFolderRoot+"/EV.png")
+# plt.close()
+fig, ax = plt.subplots()
+ax.errorbar(TToPlt,UMeanValsAll[TInds],yerr=UConfHalfLengthAll,fmt='o',color="black", ecolor='r', capsize=5,label='mc')
 EVVals=[EV(T) for T in interpolatedTVals]
-plt.plot(interpolatedTVals,EVVals,color="green",label="theory")
-plt.scatter(TToPlt,UMeanValsAll[TInds],color="darkred",label="mc")
-plt.title("E(V)")
-plt.xlabel("$T$")
+ax.plot(interpolatedTVals,EVVals,color="green",label="theory")
+ax.set_xlabel('$T$')
+ax.set_ylabel("E(V)")
+ax.set_title("E(V)")
 plt.legend(loc="best")
 plt.savefig(jsonFolderRoot+"/EV.png")
 plt.close()
-
-
+#######################################################
 def varV(T):
     """
 
@@ -377,20 +398,33 @@ def varL(T):
 
     return  c1**(-1)*c2**(-1)*(c1+c2)*T
 
-
-plt.figure()
-plt.scatter(TToPlt,LMeanValsAll[TInds],color="red",label="mc")
+###############################################################
+# plt L
+# plt.figure()
+# plt.scatter(TToPlt,LMeanValsAll[TInds],color="red",label="mc")
+# ELVals=[EL(T) for T in interpolatedTVals]
+# ELVals=np.array(ELVals)
+# plt.plot(interpolatedTVals,ELVals,color="blue",label="theory")
+# plt.title("E(L)")
+# plt.ylabel("E(L)")
+# plt.xlabel("$T$")
+# plt.legend(loc="best")
+# # plt.ylim((0,5.5))
+# plt.savefig(jsonFolderRoot+"/EL.png")
+# plt.close()
+fig, ax = plt.subplots()
+ax.errorbar(TToPlt,LMeanValsAll[TInds],yerr=LConfHalfLengthAll,fmt='o',color="black", ecolor='r', capsize=5,label='mc')
+ax.set_xlabel('$T$')
+ax.set_ylabel("E(L)")
+ax.set_title("E(L)")
 ELVals=[EL(T) for T in interpolatedTVals]
 ELVals=np.array(ELVals)
-plt.plot(interpolatedTVals,ELVals,color="blue",label="theory")
-plt.title("E(L)")
-plt.ylabel("E(L)")
-plt.xlabel("$T$")
-plt.legend(loc="best")
-# plt.ylim((0,5.5))
+ax.plot(interpolatedTVals,ELVals,color="blue",label="theory")
+ax.legend()
+plt.tight_layout()
 plt.savefig(jsonFolderRoot+"/EL.png")
 plt.close()
-
+##############################################################
 plt.figure()
 plt.scatter(TToPlt,LVarValsAll[TInds],color="magenta",label="mc")
 
@@ -413,12 +447,14 @@ plt.plot(interpolatedTVals,ELVals,color="blue",label="theory")
 ax.errorbar(TToPlt,LMeanValsAll[TInds],yerr=LSdValsAll[TInds],fmt='o',color="red", ecolor='aqua', capsize=5, label='mc')
 ax.set_xlabel('$T$')
 ax.set_ylabel('E(L)')
-ax.set_title('E(L) with error bar')
+ax.set_title('E(L) with sd')
 ax.legend()
 plt.legend(loc="best")
 plt.savefig(jsonFolderRoot+"/ELErrBar.png")
 
 plt.close()
+###########################################################
+#plt y1
 def Ey1(T):
     """
 
@@ -430,23 +466,34 @@ def Ey1(T):
 
 
 
-plt.figure()
-plt.scatter(TToPlt,y1MeanValsAll[TInds],color="red",label="mc")
+# plt.figure()
+# plt.scatter(TToPlt,y1MeanValsAll[TInds],color="red",label="mc")
+# Ey1Vals=[Ey1(T) for T in interpolatedTVals]
+#
+# plt.plot(interpolatedTVals,Ey1Vals,color="blue",label="theory")
+#
+# plt.title("E(y1)")
+# plt.ylabel("E(y1)")
+# plt.xlabel("$T$")
+# plt.legend(loc="best")
+#
+# # plt.ylim((0,1.2))
+#
+# plt.savefig(jsonFolderRoot+"/Ey1.png")
+# plt.close()
+
+###########################################################
+fig, ax = plt.subplots()
+ax.errorbar(TToPlt,y1MeanValsAll[TInds],yerr=y1ConfHalfLengthAll,fmt='o',color="black", ecolor='r', capsize=5,label='mc')
 Ey1Vals=[Ey1(T) for T in interpolatedTVals]
-
-plt.plot(interpolatedTVals,Ey1Vals,color="blue",label="theory")
-
-plt.title("E(y1)")
-plt.ylabel("E(y1)")
-plt.xlabel("$T$")
-plt.legend(loc="best")
-
-# plt.ylim((0,1.2))
-
+ax.plot(interpolatedTVals,Ey1Vals,color="blue",label="theory")
+ax.set_xlabel('$T$')
+ax.set_ylabel("$E(y_{1})$")
+ax.set_title("$E(y_{1})$")
+ax.legend()
+plt.tight_layout()
 plt.savefig(jsonFolderRoot+"/Ey1.png")
 plt.close()
-
-
 def vary1(T):
     """
 
@@ -483,7 +530,7 @@ plt.plot(interpolatedTVals,Ey1Vals,color="blue",label="theory")
 ax.errorbar(TToPlt,y1MeanValsAll[TInds],yerr=y1SdValsAll[TInds],fmt='o',color="red", ecolor='aqua', capsize=5, label='cyan')
 ax.set_xlabel('$T$')
 ax.set_ylabel('$E(y_{1})$')
-ax.set_title('$E(y_{1})$ with error bar')
+ax.set_title('$E(y_{1})$ with sd')
 ax.legend()
 plt.legend(loc="best")
 plt.savefig(jsonFolderRoot+"/Ey1ErrBar.png")

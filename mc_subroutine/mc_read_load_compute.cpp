@@ -105,8 +105,8 @@ void mc_computation::execute_mc(const double& L,const double &y0, const double &
     double y0Curr = y0;
     double z0Curr = z0;
     double y1Curr = y1;
-
-    double UCurr = (*potFuncPtr)(LCurr, y0Curr, z0Curr, y1Curr);
+    std::cout<<"Before mc: "<<"LCurr="<<LCurr<<", y0Curr="<<y0Curr<<", z0Curr="<<z0Curr<<", y1Curr="<<y1Curr<<std::endl;
+    double UCurr;// = (*potFuncPtr)(LCurr, y0Curr, z0Curr, y1Curr);
     std::random_device rd;
     std::ranlux24_base e2(rd());
     std::uniform_real_distribution<> distUnif01(0, 1);//[0,1)
@@ -120,6 +120,7 @@ void mc_computation::execute_mc(const double& L,const double &y0, const double &
             double z0Next;
             double y1Next;
             this->proposal(LCurr, y0Curr, z0Curr, y1Curr, LNext, y0Next, z0Next, y1Next);
+            UCurr=(*potFuncPtr)(LCurr, y0Curr, z0Curr, y1Curr);
             double UNext;
             double r = acceptanceRatio(LCurr, y0Curr, z0Curr, y1Curr, UCurr, LNext, y0Next, z0Next, y1Next, UNext);
             double u = distUnif01(e2);
@@ -132,10 +133,10 @@ void mc_computation::execute_mc(const double& L,const double &y0, const double &
 
             }//end of accept-reject
             U_dist_ptr[varNum*j+0]=UCurr;
-            U_dist_ptr[varNum*j+1]=LNext;
-            U_dist_ptr[varNum*j+2]=y0Next;
-            U_dist_ptr[varNum*j+3]=z0Next;
-            U_dist_ptr[varNum*j+4]=y1Next;
+            U_dist_ptr[varNum*j+1]=LCurr;
+            U_dist_ptr[varNum*j+2]=y0Curr;
+            U_dist_ptr[varNum*j+3]=z0Curr;
+            U_dist_ptr[varNum*j+4]=y1Curr;
 
         }//end for loop
 
