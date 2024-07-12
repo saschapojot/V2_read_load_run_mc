@@ -16,7 +16,7 @@ class potentialFunction {
 //base class for potential function
 public:
     virtual double operator()(const double&L,const double &y0, const double &z0, const double& y1) const = 0;
-    virtual void json2Coefs(const std::string &coefsJson)=0;
+    virtual void json2Coefs(const std::string &coefsStr)=0;
     virtual  void init()=0;
     virtual ~ potentialFunction() {};
 

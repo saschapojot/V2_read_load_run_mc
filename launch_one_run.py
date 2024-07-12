@@ -94,58 +94,97 @@ TDirRoot=jsonFromSummary["TDirRoot"]
 U_dist_dataDir=jsonFromSummary["U_dist_dataDir"]
 coefsJson=json.loads(jsonDataFromConf["coefsJson"])
 
-parametersToCpp=[TStr,json.dumps(coefsJson),funcName, json.dumps(jsonToCppInitVals),
-                 loopToWrite,newFlushNum,loopLastFile,
-                 TDirRoot,U_dist_dataDir]
-parametersToCppStr=[str(elem) for elem in parametersToCpp]
+coefsList=[]
+for key in coefsJson:
+    coefsList.append(coefsJson[key])
+coefsStr=",".join(coefsList)
+initValsStr=f"{LStr},"+f"{y0Str},"+f"{z0Str},"+f"{y1Str}"
+# print(initValsStr)
+# print(coefsStr)
+# parametersToCpp=[TStr,json.dumps(coefsJson),funcName, json.dumps(jsonToCppInitVals),
+#                  loopToWrite,newFlushNum,loopLastFile,
+#                  TDirRoot,U_dist_dataDir]
+# parametersToCppStr=[str(elem) for elem in parametersToCpp]
 # print(parametersToCppStr)
 # print("num of parameters to c++="+str(len(parametersToCpp)))
+
+#print parameters to a file
+# params2cppInFile=[
+#     "T="+TStr+"\n",
+#     "coefs="+coefsStr+"\n",
+#     "funcName="+funcName+"\n",
+#     "initVals="+initValsStr+"\n",
+#     "loopToWrite="+loopToWrite+"\n",
+#    "newFlushNum="+ newFlushNum+"\n",
+#     "loopLastFile="+loopLastFile+"\n",
+#     "TDirRoot="+TDirRoot+"\n",
+#     "U_dist_dataDir="+U_dist_dataDir+"\n"
+#
+#
+# ]
+params2cppInFile=[
+    TStr+"\n",
+    coefsStr+"\n",
+    funcName+"\n",
+    initValsStr+"\n",
+    loopToWrite+"\n",
+   newFlushNum+"\n",
+    loopLastFile+"\n",
+    TDirRoot+"\n",
+    U_dist_dataDir+"\n"
+
+
+]
+cppInParamsFileName=TDirRoot+"/cppIn.txt"
+with open(cppInParamsFileName,"w+") as fptr:
+    fptr.writelines(params2cppInFile)
+
 ###############################################
 
 ###########################################################
 #compile executable
-targetName="run_mc"
-compileErrCode=10
-cmake_result=subprocess.run(["cmake","."])
-if cmake_result.returncode!=0:
-    print("error in cmake: ")
-    print(cmake_result.stdout)
-    print(cmake_result.stderr)
-compile_result = subprocess.run(['make', targetName])
-if compile_result.returncode != 0:
-    print("Error compiling C++ program:")
-    print(compile_result.stderr)
-    exit(compileErrCode)
+# targetName="run_mc"
+# compileErrCode=10
+# cmake_result=subprocess.run(["cmake","."])
+# if cmake_result.returncode!=0:
+#     print("error in cmake: ")
+#     print(cmake_result.stdout)
+#     print(cmake_result.stderr)
+# compile_result = subprocess.run(['make', targetName])
+# if compile_result.returncode != 0:
+#     print("Error compiling C++ program:")
+#     print(compile_result.stderr)
+#     exit(compileErrCode)
 ############################################################
 
 ###########################################################
 #run executable
-cppExecutable="./run_mc"
-
-process = subprocess.Popen([cppExecutable]+parametersToCppStr, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-while True:
-    output = process.stdout.readline()
-    if output == '' and process.poll() is not None:
-        break
-    if output:
-        print(output.strip())
-stdout, stderr = process.communicate()
-if stdout:
-    print(stdout.strip())
-if stderr:
-    print(stderr.strip())
+# cppExecutable="./run_mc"
+#
+# process = subprocess.Popen([cppExecutable]+parametersToCppStr, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+# while True:
+#     output = process.stdout.readline()
+#     if output == '' and process.poll() is not None:
+#         break
+#     if output:
+#         print(output.strip())
+# stdout, stderr = process.communicate()
+# if stdout:
+#     print(stdout.strip())
+# if stderr:
+#     print(stderr.strip())
 
 ##########################################################
 
 
 ##########################################################
 #statistics
-checkU_distErrCode=5
-checkU_distResult=subprocess.run(["python3","./oneTCheckObservables/check_U_distOneT.py",json.dumps(jsonFromSummary),json.dumps(jsonDataFromConf)],capture_output=True, text=True)
-print(checkU_distResult.stdout)
-if checkU_distResult.returncode!=0:
-    print("Error in checking dist with code "+str(checkU_distResult.returncode))
-    exit(checkU_distErrCode)
+# checkU_distErrCode=5
+# checkU_distResult=subprocess.run(["python3","./oneTCheckObservables/check_U_distOneT.py",json.dumps(jsonFromSummary),json.dumps(jsonDataFromConf)],capture_output=True, text=True)
+# print(checkU_distResult.stdout)
+# if checkU_distResult.returncode!=0:
+#     print("Error in checking dist with code "+str(checkU_distResult.returncode))
+#     exit(checkU_distErrCode)
 
 ##########################################################
 

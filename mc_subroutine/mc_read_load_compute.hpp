@@ -128,6 +128,138 @@ public:
 
 
     }
+
+    mc_computation(const std::string & cppInParamsFileName){
+        std::ifstream file(cppInParamsFileName);
+        if (!file.is_open()) {
+            std::cerr << "Failed to open the file." << std::endl;
+            std::exit(20);
+        }
+        std::string line;
+
+
+
+        int paramCounter=0;
+        while (std::getline(file, line)) {
+            // Check if the line is empty
+            if (line.empty()) {
+                continue; // Skip empty lines
+            }
+            std::istringstream iss(line);
+
+            //read T
+            if(paramCounter==0){
+                iss>>T;
+                if (T <= 0) {
+                    std::cerr << "T must be >0" << std::endl;
+                    std::exit(1);
+                }//end if
+                this->beta = 1 / T;
+                double stepForT1 = 0.1;
+                this->h = stepForT1 * T > 0.2 ? 0.2 : stepForT1 * T;//stepSize;
+                std::cout << "h=" << h << std::endl;
+                paramCounter++;
+                continue;
+            }
+            //read coefficients
+            if(paramCounter==1){
+                iss>>coefsToPotFunc;
+                paramCounter++;
+                continue;
+
+            }
+            //read potential function name
+            if(paramCounter==2){
+                iss>>potFuncName;
+                paramCounter++;
+                continue;
+            }
+            //read initial values
+            if(paramCounter==3){
+                std::string temp;
+                if (std::getline(iss, temp, ',')){
+                    LInit=std::stod(temp);
+                }
+                if (std::getline(iss, temp, ',')){
+                    y0Init=std::stod(temp);
+                }
+                if (std::getline(iss, temp, ',')){
+                    z0Init=std::stod(temp);
+                }
+                if (std::getline(iss, temp, ',')){
+                    y1Init=std::stod(temp);
+                }
+                paramCounter++;
+                continue;
+
+
+
+
+            }//end reading initial values
+
+            //read loopToWrite
+            if(paramCounter==4){
+                //if loopLastFileStr is "-1", loopLastFile uses the overflowed value
+                //and loopLastFile+1 will be 0
+                iss>>loopToWrite;
+                paramCounter++;
+                continue;
+            }
+            //read newFlushNum
+            if(paramCounter==5){
+                iss>>newFlushNum;
+                paramCounter++;
+                continue;
+            }
+            //read loopLastFile
+            if(paramCounter==6){
+                iss>>loopLastFile;
+                paramCounter++;
+                continue;
+            }
+            //read TDirRoot
+            if (paramCounter==7){
+                iss>>TDirRoot;
+                paramCounter++;
+                continue;
+            }
+
+            if(paramCounter==8){
+                iss>>U_dist_dataDir;
+                paramCounter++;
+                continue;
+            }
+
+
+        }//end while
+
+        this->potFuncPtr = createPotentialFunction(potFuncName, coefsToPotFunc);
+        potFuncPtr->init();
+        this->varNum = 5;
+
+        try {
+            this->U_dist_ptr= std::shared_ptr<double[]>(new double[loopToWrite * varNum],
+                                                        std::default_delete<double[]>());
+        }
+        catch (const std::bad_alloc &e) {
+            std::cerr << "Memory allocation error: " << e.what() << std::endl;
+            std::exit(2);
+        } catch (const std::exception &e) {
+            std::cerr << "Exception: " << e.what() << std::endl;
+            std::exit(2);
+        }
+
+
+        std::cout<<"LInit="<<LInit<<", y0Init="<<y0Init
+        <<", z0Init="<<z0Init<<", y1Init="<<y1Init<<std::endl;
+
+        std::cout<<"loopToWrite="<<loopToWrite<<std::endl;
+        std::cout<<"newFlushNum="<<newFlushNum<<std::endl;
+        std::cout<<"loopLastFile+1="<<loopLastFile+1<<std::endl;
+        std::cout<<"TDirRoot="<<TDirRoot<<std::endl;
+        std::cout<<"U_dist_dataDir="<<U_dist_dataDir<<std::endl;
+
+    }//end constructor
 public:
     ///
     /// @param coefsJsonStr json data containing initial values of distances
@@ -207,6 +339,8 @@ public:
     double y0Init;
     double z0Init;
     double y1Init;
+    std::string coefsToPotFunc;
+    std::string potFuncName;
 };
 
 

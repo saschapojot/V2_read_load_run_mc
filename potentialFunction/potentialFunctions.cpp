@@ -6,29 +6,46 @@
 class V2 : public potentialFunction {
 
 public:
-    V2(const std::string &coefsJsonStr):potentialFunction(){
-        this->coefsJson=coefsJsonStr;
+    V2(const std::string &coefsStr):potentialFunction(){
+        this->coefsInStr=coefsStr;
     }
 
 public:
-    void json2Coefs(const std::string &coefsJsonStr)override{
+    void json2Coefs(const std::string &coefsStr)override{
         //this part is specific for potential function V2
-        std::stringstream ss;
-        ss<<coefsJsonStr;
-        boost::property_tree::ptree pt;
-        try {
-            boost::property_tree::read_json(ss, pt);
-            // Access data from the property tree
-            this->a1=pt.get<double>("a1");
-            this->a2=pt.get<double>("a2");
-            this->c1=pt.get<double>("c1");
-            this->c2=pt.get<double>("c2");
+        std::stringstream iss;
+        iss<<coefsStr;
+        std::string temp;
+        if (std::getline(iss, temp, ',')){
+            this->a1=std::stod(temp);
+        }
+        if (std::getline(iss, temp, ',')){
+            this->a2=std::stod(temp);
+        }
+        if (std::getline(iss, temp, ',')){
+            this->c1=std::stod(temp);
+        }
 
+        if (std::getline(iss, temp, ',')){
+            this->c2=std::stod(temp);
         }
-        catch (boost::property_tree::json_parser_error &e) {
-            std::cerr << "Error parsing JSON: " << e.what() << std::endl;
-            std::exit(10);
-        }
+
+
+
+//        boost::property_tree::ptree pt;
+//        try {
+//            boost::property_tree::read_json(ss, pt);
+//            // Access data from the property tree
+//            this->a1=pt.get<double>("a1");
+//            this->a2=pt.get<double>("a2");
+//            this->c1=pt.get<double>("c1");
+//            this->c2=pt.get<double>("c2");
+//
+//        }
+//        catch (boost::property_tree::json_parser_error &e) {
+//            std::cerr << "Error parsing JSON: " << e.what() << std::endl;
+//            std::exit(10);
+//        }
 
     }//end of json2Coefs()
 
@@ -41,7 +58,7 @@ public:
 
     }
     void init() override{
-            this->json2Coefs(coefsJson);
+            this->json2Coefs(coefsInStr);
             std::cout << "a1=" << a1 << ", a2=" << a2 << ", c1=" << c1 << ", c2=" << c2 << std::endl;
         }
 public:
@@ -49,7 +66,7 @@ public:
     double a2;
     double c1;
     double c2;
-    std::string coefsJson;
+    std::string coefsInStr;
 };
 
 //factory function

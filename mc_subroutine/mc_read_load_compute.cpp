@@ -121,6 +121,7 @@ void mc_computation::execute_mc(const double& L,const double &y0, const double &
             double y1Next;
             this->proposal(LCurr, y0Curr, z0Curr, y1Curr, LNext, y0Next, z0Next, y1Next);
             UCurr=(*potFuncPtr)(LCurr, y0Curr, z0Curr, y1Curr);
+//            std::cout<<"UCurr="<<UCurr<<std::endl;
             double UNext;
             double r = acceptanceRatio(LCurr, y0Curr, z0Curr, y1Curr, UCurr, LNext, y0Next, z0Next, y1Next, UNext);
             double u = distUnif01(e2);
